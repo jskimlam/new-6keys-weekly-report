@@ -153,11 +153,35 @@ function normalizeDaily(raw) { // 일간 가격을 [{date, price}] 형태로 맞
     return null; // 그 밖은 무시
   }).filter(x => x && isFinite(x.price)); // 숫자 아닌 것 제거
 }
+function splitMergedSections(addText, aiText, dailyRaw) { // 시트 옛 주차: 추가정보 칸에 "데일리가격 / ai 전망" 머리글이 섞여 들어온 것을 칸별로 나누는 함수
+  const src = String(addText || ''); // 추가정보 원문
+  if (!/(^|\n)\s*[-•·*]?\s*(ai\s*전망|데일리\s*가격)\s*[:：]?\s*(\n|$)/i.test(src)) return { add: src, ai: aiText || '', daily: dailyRaw }; // 섞이지 않았으면 그대로
+  const head = line => { // 한 줄이 머리글인지 판별
+    const t = line.replace(/^\s*[-•·*]\s*/, '').trim().replace(/[:：]$/, '').trim(); // 불릿·콜론 제거
+    if (/^ai\s*전망$/i.test(t)) return 'ai'; // AI 전망 머리글
+    if (/^데일리\s*가격$/.test(t)) return 'daily'; // 데일리가격 머리글
+    if (/^(추가\s*정보|결론\s*및\s*전망|변[동둉]\s*요인|코멘터리)$/.test(t)) return 'other'; // 그 밖의 머리글
+    return ''; // 일반 줄
+  };
+  const add = [], ai = [], daily = []; // 칸별 줄 모음
+  let cur = 'add'; // 현재 칸
+  src.split(/\r?\n/).forEach(line => { // 줄마다
+    const h = head(line); // 머리글 여부
+    if (h) { cur = h === 'other' ? 'add' : h; return; } // 머리글이면 칸만 바꾸고 줄은 버림
+    if (!line.trim()) return; // 빈 줄 무시
+    (cur === 'ai' ? ai : (cur === 'daily' ? daily : add)).push(line.replace(/^\s*[-•·*]\s*(?=\S)/, cur === 'add' ? '- ' : '').trim()); // 해당 칸에 추가
+  });
+  const dailyList = []; // 일별 가격 목록
+  daily.forEach(l => { const m = /^\s*(\d{1,2}\/\d{1,2})\s*[:,]\s*\$?\s*([\d,]+(?:\.\d+)?)/.exec(l); if (m) dailyList.push([m[1], m[2].replace(/,/g, '')]); }); // "9/7: $1,335" 또는 "9/7,1335" 형태만 읽음("자료 없음"은 무시)
+  const hasDaily = Array.isArray(dailyRaw) ? dailyRaw.length > 0 : !!dailyRaw; // 이미 일별 가격이 있는지
+  return { add: add.map(l => l.replace(/^-\s*-\s*/, '- ')).join('\n'), ai: aiText || ai.join(' ').replace(/\s+/g, ' ').trim(), daily: hasDaily ? dailyRaw : dailyList }; // 이미 채워진 칸은 건드리지 않음
+}
 function normalizeWeek(data) { // 시트·내장 자료를 앱 내부 표준 형태로 맞추는 함수
   const out = { week: data.week, as_of: data.as_of || '', source: data.source || '', summary_headline: data.summary_headline || '', items: {} }; // 뼈대
   ITEMS.forEach(m => { // 6개 품목 모두
     const d = (data.items || {})[m.key] || {}; // 원본 품목
     const stored = v => (v === undefined || v === null || v === '') ? null : num(v); // 저장된 증감값(없으면 null)
+    const sp = splitMergedSections(d.additional_info ?? d['추가정보'] ?? '', d.ai_outlook ?? d['ai 전망'] ?? d['AI 전망'] ?? '', d.daily_prices ?? d.dailyPrice ?? d.daily_data ?? []); // 섞인 칸 분리
     out.items[m.key] = { // 표준 필드
       price: d.price ?? '', // 현재가
       prev_price: d.prev_price ?? d.previous_price ?? '', // 전주 가격
@@ -166,9 +190,9 @@ function normalizeWeek(data) { // 시트·내장 자료를 앱 내부 표준 형
       commentary: d.commentary ?? d.comment ?? '', // 코멘터리
       factors: d.factors ?? d['변동요인'] ?? '', // 변동요인
       outlook: d.outlook ?? d['결론및전망'] ?? d['결론 및 전망'] ?? '', // 결론 및 전망
-      ai_outlook: d.ai_outlook ?? d['ai 전망'] ?? d['AI 전망'] ?? '', // AI 전망
-      additional_info: d.additional_info ?? d['추가정보'] ?? '', // 추가정보
-      daily_prices: normalizeDaily(d.daily_prices ?? d.dailyPrice ?? d.daily_data ?? []), // 일간 가격
+      ai_outlook: sp.ai, // AI 전망(칸이 비어 있으면 추가정보에 섞인 것에서 분리)
+      additional_info: sp.add, // 추가정보(머리글 제거)
+      daily_prices: normalizeDaily(sp.daily), // 일간 가격
       headline: d.headline ?? '' // 핵심 메시지(비우면 자동 초안)
     };
   });
