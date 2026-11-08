@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<!-- ============================================================
+  New 6 Keys Weekly Report — 단일 HTML (설치 명령어 없음 — 더블클릭으로 실행)
+  · 소스는 src/ 에 있고 build.py 가 이 파일(index.html)을 만든다.
+  · 외부 CDN 의존 없음: PptxGenJS, JSZip 은 아래에 minified 로 인라인되어 있다.
+============================================================ -->
+<html lang="ko"><!-- 한국어 문서 -->
+<head><!-- 머리 -->
+<meta charset="utf-8"><!-- 문자 인코딩 -->
+<meta name="viewport" content="width=device-width,initial-scale=1"><!-- 화면 크기 대응 -->
+<title>New 6 Keys Weekly Report</title><!-- 탭 제목 -->
+<style>/*__STYLE__*/</style><!-- 스타일 삽입 위치 -->
+</head>
+<body><!-- 본문 -->
+<div id="bar"><!-- 상단 조작 막대(발표 중에는 숨김) -->
+  <span class="brand">6 Keys Weekly</span><!-- 앱 이름 -->
+  <label class="grp">주차 <select id="weekSel" title="주차 아카이브"></select></label><!-- 주차 선택 -->
+  <span class="grp" id="pageChips"></span><!-- 쪽 이동 칩 -->
+  <button id="btnPrev" title="이전 (←)">◀</button><!-- 이전 쪽 -->
+  <button id="btnNext" title="다음 (→)">▶</button><!-- 다음 쪽 -->
+  <button id="btnPresent" class="pri" title="전체화면 발표 (F5 / F)">▶ 발표(F5)</button><!-- 발표 시작 -->
+  <label class="grp">전환 <select id="transSel"><option value="fade">페이드</option><option value="push">밀기</option><option value="zoom">확대</option><option value="none">없음</option></select></label><!-- 전환 효과 -->
+  <button id="btnStep" title="단계 등장 (S)">단계 등장: 꺼짐</button><!-- 단계 등장 토글 -->
+  <button id="btnOv" title="목차 (O)">목차</button><!-- 목차 -->
+  <button id="btnPng" title="현재 쪽 PNG 저장">PNG</button><!-- PNG 저장 -->
+  <button id="btnCopy" title="현재 쪽 이미지 복사">이미지 복사</button><!-- 이미지 복사 -->
+  <button id="btnPptx" class="pri2" title="PPT 저장">PPT 저장</button><!-- PPT 저장 -->
+  <span class="sp"></span><!-- 오른쪽 정렬용 빈칸 -->
+  <span id="adminGrp" class="grp adm" hidden><!-- 관리자 전용 도구(잠금 해제 후 표시) -->
+    <button id="btnEdit" title="문구 편집 (E)">✏ 편집(E)</button><!-- 인라인 편집 -->
+    <button id="btnItem" title="선택 품목 입력 창">품목 입력</button><!-- 품목 입력 창 -->
+    <button id="btnSave" class="pri" title="시트에 저장">시트 저장</button><!-- 시트(GAS) 저장 -->
+    <button id="btnNewWeek" title="새 주차 추가">새 주차</button><!-- 새 주차 -->
+    <button id="btnJson" title="이 주차 JSON 내려받기">JSON</button><!-- JSON 내보내기 -->
+    <button id="btnReload" title="시트에서 다시 불러오기">새로고침</button><!-- 다시 불러오기 -->
+  </span>
+  <button id="btnAdmin" title="관리자 모드">🔒 관리자</button><!-- 관리자 잠금/해제 -->
+</div>
+<div id="viewport"><!-- 슬라이드를 담는 영역 -->
+  <div id="stage"><!-- 1600×1194 고정 캔버스(배율로 창에 맞춤) -->
+    <div id="pageLayer"></div><!-- 쪽 본문(전환 대상) -->
+    <div id="masterLayer"></div><!-- 마스터(구분선·장식, 전환 중에도 고정) -->
+  </div>
+  <div id="cover"></div><!-- B/W 화면 가리개 -->
+  <div id="laser"></div><!-- 레이저 포인터 -->
+  <div id="overview"></div><!-- 목차(쪽 카드) -->
+  <div id="hud"><div id="hudBar"></div><span id="hudNo"></span></div><!-- 진행 막대·쪽 번호 -->
+</div>
+<div id="measure"></div><!-- 글 넘침 측정용(화면 밖) -->
+<div id="toast"></div><!-- 한글 안내 토스트 -->
+<div id="modalRoot"></div><!-- 모달 창 -->
+<script>/*__LIB_JSZIP__*/</script><!-- JSZip 인라인 -->
+<script>/*__LIB_PPTX__*/</script><!-- PptxGenJS 인라인 -->
+<script>/*__DATA__*/</script><!-- 내장 주차 자료·장식 PNG -->
+<script>/*__APP__*/</script><!-- 앱 코드 -->
+</body>
+</html>

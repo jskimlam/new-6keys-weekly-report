@@ -1,0 +1,72 @@
+/* ───────── 기본 ───────── */
+*{box-sizing:border-box}/* 모든 요소의 크기 계산을 테두리 포함으로 */
+html,body{margin:0;height:100%;background:#E9ECF1;font-family:'Malgun Gothic','맑은 고딕','Noto Sans CJK KR','Noto Sans KR',sans-serif;color:#000}/* 바탕·글꼴 */
+[hidden]{display:none !important}/* hidden 속성은 항상 숨김 */
+/* ───────── 상단 조작 막대 ───────── */
+#bar{position:fixed;left:0;right:0;top:0;height:46px;background:#0C4270;color:#fff;display:flex;align-items:center;gap:8px;padding:0 12px;z-index:50;font-size:13px;white-space:nowrap;overflow-x:auto}/* 군청 막대 */
+#bar .brand{font-weight:700;letter-spacing:.3px;margin-right:6px}/* 앱 이름 */
+#bar .grp{display:inline-flex;align-items:center;gap:5px}/* 묶음 */
+#bar .sp{flex:1}/* 남는 공간 */
+#bar button,#bar select{height:30px;border:1px solid rgba(255,255,255,.45);background:rgba(255,255,255,.12);color:#fff;border-radius:6px;padding:0 10px;font:inherit;cursor:pointer}/* 버튼·선택 상자 */
+#bar select option{color:#000}/* 선택 목록 글자색 */
+#bar button:hover{background:rgba(255,255,255,.28)}/* 마우스 올림 */
+#bar button.pri{background:#fff;color:#0C4270;font-weight:700}/* 강조 버튼 */
+#bar button.pri2{background:#5B84C4;border-color:#5B84C4;font-weight:700}/* PPT 버튼 */
+#bar button.on{background:#fff;color:#0C4270}/* 켜진 토글 */
+#bar .adm button{border-color:#FFD27A}/* 관리자 도구 강조선 */
+.chip{min-width:26px;padding:0 6px !important}/* 쪽 칩 */
+.chip.cur{background:#fff !important;color:#0C4270 !important;font-weight:700}/* 현재 쪽 칩 */
+/* ───────── 슬라이드 영역 ───────── */
+#viewport{position:fixed;left:0;right:0;top:46px;bottom:0;overflow:hidden;background:#E9ECF1}/* 슬라이드 영역 */
+body.present #bar{display:none}/* 발표 중 막대 숨김 */
+body.present #viewport{top:0;background:#000}/* 발표 중 검은 바탕 */
+body.present.nocursor,body.present.nocursor *{cursor:none !important}/* 마우스가 멈추면 커서 숨김 */
+#stage{position:absolute;left:0;top:0;width:1600px;height:1194px;transform-origin:0 0;background:#fff;box-shadow:0 2px 14px rgba(0,0,0,.25);overflow:hidden}/* 고정 캔버스 */
+#pageLayer,#masterLayer{position:absolute;inset:0}/* 겹쳐 놓는 층 */
+#masterLayer{pointer-events:none}/* 마스터는 클릭 통과 */
+.page{position:absolute;inset:0;background:#fff}/* 한 쪽 */
+.page.t-fade{transition:opacity .45s ease}.page.t-push{transition:transform .5s ease}.page.t-zoom{transition:transform .5s ease,opacity .5s ease}/* 전환 효과 */
+.el{position:absolute;display:flex;flex-direction:column;overflow:hidden}/* 요소 공통 */
+.el .in{width:100%}/* 글 래퍼 */
+.p{white-space:pre-wrap;word-break:keep-all;overflow-wrap:anywhere;line-height:1.14}/* 문단 */
+.p.bul{padding-left:20.7px;text-indent:-20.7px}/* 글머리표 문단(0.13in) */
+.p.bul::before{content:'•';display:inline-block;width:20.7px;text-indent:0}/* 글머리표 */
+.el.step-hide{opacity:0;pointer-events:none}/* 단계 등장 전 숨김 */
+.el{transition:opacity .35s ease}/* 단계 등장 효과 */
+.el.editable{outline:2px dashed #E3262E;outline-offset:-2px;cursor:text}/* 편집 가능 칸(점선) */
+.el.editable:focus{background:#FFFBE6}/* 편집 중 */
+tr[data-go]{cursor:pointer}/* 요약표 행 클릭 이동 */
+tr[data-go]:hover td{background:#F2F2F2}/* 요약표 행 마우스 올림 */
+/* ───────── 발표 도구 ───────── */
+#cover{position:absolute;inset:0;display:none;z-index:30}/* 검은/흰 화면 */
+#laser{position:absolute;width:22px;height:22px;border-radius:50%;background:rgba(255,0,0,.75);box-shadow:0 0 14px 6px rgba(255,0,0,.45);display:none;z-index:31;pointer-events:none;transform:translate(-50%,-50%)}/* 레이저 점 */
+#overview{position:absolute;inset:0;background:rgba(10,20,40,.94);display:none;z-index:32;overflow:auto;padding:24px;gap:18px;flex-wrap:wrap;align-content:flex-start}/* 목차 */
+#overview.on{display:flex}/* 목차 표시 */
+.ovCard{width:320px;cursor:pointer;color:#fff;font-size:13px;text-align:center}/* 목차 카드 */
+.ovCard .th{width:320px;height:239px;background:#fff;position:relative;overflow:hidden;border:3px solid transparent;border-radius:4px}/* 썸네일 틀 */
+.ovCard.cur .th{border-color:#FFD27A}/* 현재 쪽 */
+#hud{position:absolute;left:0;right:0;bottom:0;height:22px;display:none;z-index:29;pointer-events:none}/* 진행 막대 영역 */
+body.present #hud{display:block}/* 발표 중에만 */
+#hudBar{position:absolute;left:0;bottom:0;height:4px;background:#5B84C4;width:0;transition:width .3s}/* 진행 막대 */
+#hudNo{position:absolute;right:10px;bottom:6px;color:#bbb;font-size:12px}/* 쪽 번호 */
+#measure{position:absolute;left:-99999px;top:0;width:1600px;height:1194px;visibility:hidden}/* 측정 영역 */
+/* ───────── 토스트·모달 ───────── */
+#toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%);background:rgba(12,66,112,.96);color:#fff;padding:10px 18px;border-radius:8px;font-size:14px;z-index:99;opacity:0;pointer-events:none;transition:opacity .25s;max-width:80vw;white-space:pre-line;text-align:center}/* 안내 토스트 */
+#toast.on{opacity:1}/* 토스트 표시 */
+.mask{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;display:flex;align-items:center;justify-content:center}/* 모달 바탕 */
+.dlg{background:#fff;border-radius:10px;padding:18px 20px;max-height:90vh;overflow:auto;box-shadow:0 8px 40px rgba(0,0,0,.4);font-size:13px;min-width:340px}/* 모달 창 */
+.dlg h3{margin:0 0 12px;font-size:16px;color:#0C4270}/* 모달 제목 */
+.dlg label{display:block;margin:8px 0 3px;font-weight:700;font-size:12px;color:#333}/* 입력 라벨 */
+.dlg input,.dlg textarea,.dlg select{width:100%;border:1px solid #bbb;border-radius:6px;padding:6px 8px;font:inherit}/* 입력 칸 */
+.dlg textarea{min-height:64px;resize:vertical}/* 여러 줄 입력 */
+.dlg .row{display:flex;gap:10px}.dlg .row>div{flex:1}/* 가로 배치 */
+.dlg .btns{display:flex;justify-content:flex-end;gap:8px;margin-top:14px}/* 버튼 줄 */
+.dlg button{height:32px;padding:0 14px;border-radius:6px;border:1px solid #0C4270;background:#fff;color:#0C4270;cursor:pointer;font:inherit}/* 모달 버튼 */
+.dlg button.pri{background:#0C4270;color:#fff}/* 모달 강조 버튼 */
+.dlg .hint{color:#666;font-size:12px;margin-top:4px}/* 보조 안내 */
+.dlg .chk{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:6px}/* 체크 목록 */
+.dlg .chk label{display:inline-flex;align-items:center;gap:4px;margin:0;font-weight:400}/* 체크 라벨 */
+.dlg .chk input{width:auto}/* 체크 입력 */
+/* ───────── 편집 모드: 표 셀·문단 편집 칸 표시 ───────── */
+td.editable,.p.editable{outline:2px dashed #E3262E;outline-offset:-2px;cursor:text}/* 표 셀·문단 점선 */
+td.editable:focus,.p.editable:focus{background:#FFFBE6}/* 편집 중 배경 */
