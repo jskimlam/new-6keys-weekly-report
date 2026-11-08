@@ -164,6 +164,18 @@ function outlookPill(txt) { // AI 전망 첫머리의 상승/하락/보합을 �
   return { t: '전망 : ' + m[1], c: dirColor(d) }; // 알약 정보
 }
 
+function aiGist(txt) { // 요약 표용: AI 전망에서 방향 말머리를 빼고 첫 문장만 줄여 돌려주는 함수
+  let t = String(txt || '').replace(/\s+/g, ' ').trim(); // 공백 정리
+  t = t.replace(/^(상승|하락|보합)\s*(전망)?\s*[.,:·-]?\s*/, ''); // 맨 앞 "하락 전망." 말머리 제거(알약이 따로 보여 줌)
+  const k = t.search(/[.。]\s/); // 첫 문장 끝 위치
+  if (k > 0) t = t.slice(0, k + 1); // 첫 문장만 사용
+  if (t.length > 120) { // 너무 길면
+    const cut = t.lastIndexOf(' ', 118); // 120자 안쪽의 마지막 띄어쓰기
+    t = t.slice(0, cut > 60 ? cut : 118) + '…'; // 줄임표로 마무리
+  }
+  return t; // 반환
+}
+
 // ───────────────────────── 6. 차트·델타 행 ─────────────────────────
 const PLOT = { x: 0.04, y: 0.2, w: 0.92, h: 0.6 }; // 차트 플롯 영역 비율(좌·상·폭·높이)
 function lineScale(vals) { // 선 차트 축 범위
@@ -315,20 +327,25 @@ function buildSummarySlide(win, wk) { // 첫 장: 품목 세로 나열, 가격 �
   const warn = []; // 경고
   titleEls('6Keys 주간 가격 요약', [weekShort(wk.week) + ' (' + weekRangeText(wk.week) + ')', '전주 대비 · 단위 $/bbl, $/MT'], null).forEach(e => els.push(e)); // 상단
   messageBox(summaryHeadline(wk, sts), 0.82, 0.46, { kind: 'week', field: 'summary_headline' }).forEach(e => els.push(e)); // 핵심 메시지
-  const colW = [1.74, 1.06, 1.15, 5.7]; // 열 너비(합 9.65)
+  const colW = [1.4, 0.95, 1.0, 3.85, 2.45]; // 열 너비(합 9.65)
   const rowH = [0.3, 0.91, 0.91, 0.91, 0.91, 0.91, 0.91]; // 행 높이(머리글 + 6행)
   const wb = { l: sline(C.wht, 0.75), r: sline(C.wht, 0.75) }; // 머리글 흰 구분선
-  const hd = ['품목', '가격', '전주비', '코멘터리'].map((t, i) => Cell([Pa(Rn(t, { sz: 9, b: true, c: C.wht }), { al: i === 3 ? 'l' : 'c' })], { fill: C.blk, bd: wb, ins: [i === 3 ? 0.1 : 0.04, 0.02, 0.04, 0.02] })); // 머리글 행
+  const hd = ['품목', '가격', '전주비', '코멘터리', 'AI 전망'].map((t, i) => Cell([Pa(Rn(t, { sz: 9, b: true, c: C.wht }), { al: i >= 3 ? 'l' : 'c' })], { fill: C.blk, bd: wb, ins: [i >= 3 ? 0.1 : 0.04, 0.02, 0.04, 0.02] })); // 머리글 행
   const rows = [hd]; // 표 행 목록
-  // 코멘터리 글자 크기: 6행 모두 들어가는 가장 큰 크기를 공통으로 사용
-  const cw = colW[3] - 0.2, chMax = rowH[1] - 0.08; // 셀 안 가용 폭·높이
+  // 코멘터리·AI 전망 글자 크기: 6행 모두 들어가는 가장 큰 크기를 공통으로 사용
+  const cw = colW[3] - 0.2, aw = colW[4] - 0.2, chMax = rowH[1] - 0.08; // 셀 안 가용 폭·높이
+  const aiParas = (s, sz) => { // AI 전망 칸 문단(방향 한 줄 + 요약 문장)
+    const pl = outlookPill(s.it.ai_outlook); // 방향 알약 정보
+    if (!pl) return [Pa(Rn(s.it.ai_outlook ? aiGist(s.it.ai_outlook) : '(내용 없음)', { sz: sz, c: s.it.ai_outlook ? C.blk : 'A6A6A6' }))]; // 방향 없음
+    return [Pa(Rn(pl.t, { sz: sz + 0.5, b: true, c: pl.c })), Pa(Rn(aiGist(s.it.ai_outlook), { sz: sz }))]; // 방향 + 요약
+  };
   let csz = 8; // 시작 크기
   const sizes = [8, 7.5, 7, 6.5]; // 후보 크기
   for (let i = 0; i < sizes.length; i++) { // 큰 것부터
     csz = sizes[i]; // 후보
-    const okAll = sts.every(s => measureH([Pa(Rn(s.it.commentary || '(내용 없음)', { sz: csz }))], cw, [0, 0, 0, 0]) <= chMax); // 모두 들어가는지
+    const okAll = sts.every(s => measureH([Pa(Rn(s.it.commentary || '(내용 없음)', { sz: csz }))], cw, [0, 0, 0, 0]) <= chMax && measureH(aiParas(s, csz), aw, [0, 0, 0, 0]) <= chMax); // 두 칸 모두 들어가는지
     if (okAll) break; // 확정
-    if (i === sizes.length - 1) warn.push('요약 코멘터리가 칸을 넘칩니다 (최소 글자 크기 적용)'); // 마지막까지 안 맞으면 경고
+    if (i === sizes.length - 1) warn.push('요약 코멘터리·AI 전망이 칸을 넘칩니다 (최소 글자 크기 적용)'); // 마지막까지 안 맞으면 경고
   }
   sts.forEach((s, ri) => { // 품목 행
     const m = s.meta; // 품목
@@ -338,13 +355,14 @@ function buildSummarySlide(win, wk) { // 첫 장: 품목 세로 나열, 가격 �
     const c1 = Cell([Pa(Rn(priceStr(s.price, m), { sz: 14, b: true }), { al: 'c' }), Pa(Rn(m.unit, { sz: 7.5, c: C.gray }), { al: 'c' })], {}); // 가격 칸
     const c2 = Cell([Pa(Rn(s.dir === 0 ? '–' : deltaText(s.d, m), { sz: 11, b: true, c: dc }), { al: 'c' }), Pa(Rn(isFinite(s.p) ? pctText(s.p, 2) : '–', { sz: 8, c: dc }), { al: 'c' })], {}); // 전주비 칸
     const c3 = Cell([Pa(Rn(s.it.commentary || '(내용 없음)', { sz: csz, c: s.it.commentary ? C.blk : 'A6A6A6' }))], { va: 'm', ins: [0.1, 0.04, 0.1, 0.04], bind: { kind: 'item', key: m.key, field: 'commentary' } }); // 코멘터리 칸
-    rows.push([c0, c1, c2, c3]); // 행 추가
+    const c4 = Cell(aiParas(s, csz), { va: 'm', ins: [0.1, 0.04, 0.1, 0.04] }); // AI 전망 칸(요약 표시 전용 — 전문은 각 품목 쪽에서 수정)
+    rows.push([c0, c1, c2, c3, c4]); // 행 추가
     rows[rows.length - 1].go = ri + 1; // 클릭 시 이동할 쪽 번호(0부터, 요약이 0)
   });
   const tb = Tb(0.2, 1.36, colW, rowH, rows, { border: 'h', step: 1 }); // 요약 표
   els.push(tb); // 추가
   const fn = []; // 주석
-  fn.push('※ 전주 대비 = 금주 − 전주 가격 (▲ 상승 빨강 · ▼ 하락 파랑 · – 보합 검정). 행을 누르면 해당 품목 쪽으로 이동.'); // 안내
+  fn.push('※ 전주 대비 = 금주 − 전주 가격 (▲ 상승 빨강 · ▼ 하락 파랑 · – 보합 검정). 행을 누르면 해당 품목 쪽으로 이동. AI 전망은 첫 문장 요약이며 전문은 각 품목 쪽 ⑦ 참조.'); // 안내
   fn.push('기준 : ' + ITEMS.map(m => m.code + ' ' + m.bench).join(' / ') + '.'); // 기준
   sts.forEach(s => s.notes.forEach(n => fn.push(n))); // 검산 주석
   els.push(Tx(0.2, 7.2, 9.65, 0.26, [Pa(Rn(fn.join(' '), { sz: 7.5, c: C.gray }))], { va: 't' })); // 주석 상자
