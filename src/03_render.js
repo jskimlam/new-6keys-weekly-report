@@ -234,7 +234,7 @@ function slideToXhtml(slide) { // 쪽 + 마스터를 하나의 XHTML 문자열�
   const body = new XMLSerializer().serializeToString(stage); // 유효한 XML 로 직렬화
   return '<div xmlns="http://www.w3.org/1999/xhtml" style="font-family:\'Malgun Gothic\',\'맑은 고딕\',\'Noto Sans CJK KR\',\'Noto Sans KR\',sans-serif"><style><![CDATA[' + css + ']]></style>' + body + '</div>'; // 결과
 }
-async function slideToPngBlob(slide, wpx, hpx) { // 쪽 → PNG Blob (기본 3060×2284)
+async function slideToPngBlob(slide, wpx, hpx, mime, quality) { // 쪽 → 이미지 Blob (기본 PNG 3060×2284, mime 으로 JPEG 선택 가능)
   try { // 실패하면 한글 안내
     const W = wpx || 3060, H = hpx || 2284; // 출력 크기
     const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1194"><foreignObject x="0" y="0" width="1600" height="1194">' + slideToXhtml(slide) + '</foreignObject></svg>'; // SVG 포장
@@ -245,7 +245,7 @@ async function slideToPngBlob(slide, wpx, hpx) { // 쪽 → PNG Blob (기본 306
     const cv = document.createElement('canvas'); cv.width = W; cv.height = H; // 캔버스
     const cx = cv.getContext('2d'); cx.fillStyle = '#fff'; cx.fillRect(0, 0, W, H); // 흰 바탕
     cx.drawImage(img, 0, 0, W, H); // 그리기
-    return await new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('이미지 변환에 실패했습니다')), 'image/png')); // Blob
+    return await new Promise((res, rej) => cv.toBlob(b => b ? res(b) : rej(new Error('이미지 변환에 실패했습니다')), mime || 'image/png', quality)); // Blob
   } catch (e) { // 오류
     console.error(e); // 기록
     throw new Error('이미지 변환에 실패했습니다. 브라우저를 최신 버전으로 사용해 주세요.'); // 한글 안내

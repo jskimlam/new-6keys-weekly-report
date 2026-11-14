@@ -294,6 +294,55 @@ function exportDialog(kind) { // 현재 쪽 / 선택 쪽 / 전체 선택 창
     };
   });
 }
+// ───────────────────────── 7-2. PDF 전체 저장 (회사 용지, 한 파일) ─────────────────────────
+// 쪽을 2400×1791px 그림(JPEG)으로 찍어 PDF 한 페이지씩에 넣는다. 외부 라이브러리 없이 PDF 를 직접 조립한다.
+// 그림 방식이라 PDF 안의 글자는 선택·검색되지 않는다(편집이 필요하면 PPT 저장을 사용).
+function pdfBuild(pages, pw, ph) { // pages:[{bytes,w,h}] → PDF Uint8Array (pw/ph 는 pt)
+  const enc = new TextEncoder(), parts = [], offs = []; // 글자 변환기, 조각 목록, 개체별 시작 위치
+  let pos = 0; // 지금까지 쓴 바이트 수
+  const put = u8 => { parts.push(u8); pos += u8.length; }; // 바이트 추가
+  const txt = t => put(enc.encode(t)); // 글자 추가
+  const obj = (n, head, body) => { // 개체 1개 기록(body 가 있으면 stream 으로)
+    offs[n] = pos; txt(n + ' 0 obj\n' + head);
+    if (body) { txt('\nstream\n'); put(body); txt('\nendstream'); }
+    txt('\nendobj\n');
+  };
+  txt('%PDF-1.4\n%\u00e2\u00e3\u00cf\u00d3\n'); // 머리말
+  obj(1, '<< /Type /Catalog /Pages 2 0 R >>'); // 문서 루트
+  obj(2, '<< /Type /Pages /Count ' + pages.length + ' /Kids [' + pages.map((_, i) => (3 + i * 3) + ' 0 R').join(' ') + '] >>'); // 쪽 목록
+  pages.forEach((g, i) => {
+    const pg = 3 + i * 3, ct = pg + 1, im = pg + 2; // 쪽 / 내용 / 그림 개체 번호
+    obj(pg, '<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ' + pw.toFixed(2) + ' ' + ph.toFixed(2) + '] /Resources << /XObject << /Im0 ' + im + ' 0 R >> >> /Contents ' + ct + ' 0 R >>');
+    const draw = enc.encode('q ' + pw.toFixed(2) + ' 0 0 ' + ph.toFixed(2) + ' 0 0 cm /Im0 Do Q'); // 그림을 쪽 전체에 맞춰 그림
+    obj(ct, '<< /Length ' + draw.length + ' >>', draw);
+    obj(im, '<< /Type /XObject /Subtype /Image /Width ' + g.w + ' /Height ' + g.h + ' /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ' + g.bytes.length + ' >>', g.bytes);
+  });
+  const n = 3 + pages.length * 3, xr = pos; // 개체 수, xref 시작 위치
+  let x = 'xref\n0 ' + n + '\n0000000000 65535 f \n';
+  for (let k = 1; k < n; k++) x += String(offs[k]).padStart(10, '0') + ' 00000 n \n';
+  txt(x + 'trailer\n<< /Size ' + n + ' /Root 1 0 R >>\nstartxref\n' + xr + '\n%%EOF\n');
+  const out = new Uint8Array(pos); let o = 0; // 한 덩어리로 합치기
+  parts.forEach(u => { out.set(u, o); o += u.length; });
+  return out;
+}
+async function savePdfAll() { // 전체 쪽 → PDF 1개
+  const all = state.slides; // 전체 쪽
+  let stage = '준비'; // 실패 단계 안내용
+  try {
+    const pages = []; // 쪽별 JPEG
+    for (let i = 0; i < all.length; i++) {
+      stage = '쪽 그림 만들기 ' + (i + 1) + '/' + all.length;
+      toast('PDF 만드는 중 ' + (i + 1) + '/' + all.length + ' …', 4000);
+      const b = await slideToPngBlob(all[i], 2400, 1791, 'image/jpeg', 0.92); // 회사 용지 비율 JPEG
+      pages.push({ bytes: new Uint8Array(await b.arrayBuffer()), w: 2400, h: 1791 });
+    }
+    stage = 'PDF 조립';
+    const pdf = pdfBuild(pages, PAGE_W * 72, PAGE_H * 72); // 1in = 72pt
+    stage = '다운로드';
+    downloadBlob(new Blob([pdf], { type: 'application/pdf' }), pptxFileName('all', all.map((s, i) => i + 1)).replace(/\.pptx$/, '.pdf'));
+    toast('PDF를 저장했습니다 (' + all.length + '쪽)');
+  } catch (e) { toast('PDF 저장 중 [' + stage + '] 단계에서 실패했습니다 : ' + (e.message || '알 수 없는 오류'), 6000); } // 한글 오류
+}
 async function savePngs(scope, sel) { // PNG 저장(현재/선택/전체)
   const nos = scope === 'current' ? [state.cur + 1] : (scope === 'all' ? state.slides.map((s, i) => i + 1) : sel.slice().sort((a, b) => a - b)); // 대상 쪽
   if (!nos.length) { toast('저장할 쪽을 선택해 주세요'); return; } // 선택 없음
@@ -483,6 +532,7 @@ function bindButtons() { // 버튼 연결
   $('btnPng').onclick = () => exportDialog('png'); // PNG
   $('btnCopy').onclick = copyImage; // 이미지 복사
   $('btnPptx').onclick = () => exportDialog('pptx'); // PPT
+  $('btnPdf').onclick = savePdfAll; // PDF 전체 저장
   $('weekSel').onchange = e => { state.stepNo = 0; loadWeek(e.target.value, false); }; // 주차 변경
   $('btnAdmin').onclick = adminClick; // 관리자
   $('btnEdit').onclick = toggleEdit; // 편집
