@@ -59,6 +59,8 @@ function itemStats(key, win, week) { // 한 품목의 금주 통계·6주 이력
   const notes = []; // 검산 주석
   if (it.change_abs !== null && isFinite(it.change_abs) && isFinite(cur.d) && Math.abs(it.change_abs - cur.d) > 0.05) notes.push(meta.code + ' 증감액 원본 ' + fmtNum(it.change_abs, meta.dec) + ' ≠ 계산 ' + fmtNum(cur.d, meta.dec) + ' (확인 필요)'); // 증감액 불일치
   if (it.change_pct !== null && isFinite(it.change_pct) && isFinite(cur.p) && Math.abs(it.change_pct - cur.p) > 0.05) notes.push(meta.code + ' 증감률 원본 ' + it.change_pct + '% ≠ 계산 ' + cur.p.toFixed(2) + '% (확인 필요)'); // 증감률 불일치
+  if (meta.bnote) notes.push(meta.bnote + '.'); // 벤치마크 기준 주석(AN 수요일 발표 등)
+  if (it.note) notes.push(it.note + '.'); // 자료에 적힌 주석(휴일 보충 등)
   return { meta, it, key, price: cur.price, prev: cur.prev, d: cur.d, p: cur.p, dir: dirOf(cur.d), series, hi, lo, avg, vsAvg, daily, dailyD, range, isDaily: daily.length >= 2, notes }; // 통계 묶음
 }
 function priceStr(v, meta) { return isFinite(v) ? fmtNum(v, meta.dec) : '–'; } // 가격 문자열

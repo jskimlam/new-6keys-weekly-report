@@ -24,7 +24,7 @@ const C = { blk: '000000', red: 'FF0000', blue: '0000FF', gray: '595959', line: 
 const ITEMS = [ // 표시 순서 = 쪽 순서
   { key: 'WTI', code: 'WTI', title: 'WTI Crude Oil', ko: 'WTI 원유', bench: 'NYMEX Light Sweet', basis: 'NYMEX WTI 선물 (Light Sweet Crude)', unit: '$/bbl', per: 'bbl', dec: 2 }, // WTI
   { key: 'Styrene', code: 'SM', title: 'Styrene Monomer (SM)', ko: '스티렌모노머', bench: 'CFR China', basis: 'SM CFR China', unit: '$/MT', per: 'MT', dec: 1 }, // 스티렌모노머
-  { key: 'Acrylonitrile', code: 'AN', title: 'Acrylonitrile (AN)', ko: '아크릴로니트릴', bench: 'CFR Far East Asia', basis: 'ACN CFR Far East Asia', unit: '$/MT', per: 'MT', dec: 1 }, // 아크릴로니트릴
+  { key: 'Acrylonitrile', code: 'AN', title: 'Acrylonitrile (AN)', ko: '아크릴로니트릴', bench: 'CFR Far East Asia', basis: 'ACN CFR Far East Asia', bnote: 'Platts ACN CFR Far East Asia는 수요일 발표값을 금요일 가격으로 간주(금요일 실거래가와 다를 수 있음)', unit: '$/MT', per: 'MT', dec: 1 }, // 아크릴로니트릴
   { key: 'Butadiene', code: 'BD', title: 'Butadiene (BD)', ko: '부타디엔', bench: 'CFR China', basis: 'BD CFR China', unit: '$/MT', per: 'MT', dec: 1 }, // 부타디엔
   { key: 'BPA', code: 'BPA', title: 'Bisphenol A (BPA)', ko: '비스페놀A', bench: 'CFR China Spot', basis: 'BPA CFR China Spot', unit: '$/MT', per: 'MT', dec: 1 }, // 비스페놀A
   { key: 'MMA', code: 'MMA', title: 'Methyl Methacrylate (MMA)', ko: '메틸메타크릴레이트', bench: 'CFR South Korea', basis: 'MMA CFR South Korea (500mt 이상)', unit: '$/MT', per: 'MT', dec: 1 } // MMA
@@ -193,7 +193,8 @@ function normalizeWeek(data) { // 시트·내장 자료를 앱 내부 표준 형
       ai_outlook: sp.ai, // AI 전망(칸이 비어 있으면 추가정보에 섞인 것에서 분리)
       additional_info: sp.add, // 추가정보(머리글 제거)
       daily_prices: normalizeDaily(sp.daily), // 일간 가격
-      headline: d.headline ?? '' // 핵심 메시지(비우면 자동 초안)
+      headline: d.headline ?? '', // 핵심 메시지(비우면 자동 초안)
+      note: d.note ?? '' // 하단 주석(예: 휴일로 평가 없음 → 전일가 적용)
     };
   });
   return out; // 표준화된 주차 자료
