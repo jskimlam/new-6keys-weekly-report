@@ -529,6 +529,7 @@ function bindButtons() { // 버튼 연결
   $('transSel').onchange = e => { state.trans = e.target.value; }; // 전환 효과
   $('btnStep').onclick = toggleStep; // 단계 등장
   $('btnOv').onclick = toggleOverview; // 목차
+  $('btnImgNow').onclick = () => savePngs('current', []); // 현재 쪽 이미지 즉시 저장
   $('btnPng').onclick = () => exportDialog('png'); // PNG
   $('btnCopy').onclick = copyImage; // 이미지 복사
   $('btnPptx').onclick = () => exportDialog('pptx'); // PPT

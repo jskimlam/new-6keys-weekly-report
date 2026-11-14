@@ -99,7 +99,8 @@ td.editable:focus,.p.editable:focus{background:#FFFBE6}/* 편집 중 배경 */
   <label class="grp">전환 <select id="transSel"><option value="fade">페이드</option><option value="push">밀기</option><option value="zoom">확대</option><option value="none">없음</option></select></label><!-- 전환 효과 -->
   <button id="btnStep" title="단계 등장 (S)">단계 등장: 꺼짐</button><!-- 단계 등장 토글 -->
   <button id="btnOv" title="목차 (O)">목차</button><!-- 목차 -->
-  <button id="btnPng" title="현재 쪽 PNG 저장">PNG</button><!-- PNG 저장 -->
+  <button id="btnImgNow" title="지금 보고 있는 쪽을 PNG 이미지로 바로 저장">현재 쪽 이미지 저장</button><!-- 현재 쪽 이미지 즉시 저장 -->
+  <button id="btnPng" title="현재 쪽 / 선택 쪽 / 전체 PNG 저장">PNG(선택·전체)</button><!-- PNG 저장 대화상자 -->
   <button id="btnCopy" title="현재 쪽 이미지 복사">이미지 복사</button><!-- 이미지 복사 -->
   <button id="btnPptx" class="pri2" title="PPT 저장">PPT 저장</button><!-- PPT 저장 -->
   <button id="btnPdf" title="전체 쪽을 PDF 한 파일로 저장 (회사 용지 25.517×19.05cm)">PDF 전체 저장</button><!-- PDF 전체 저장 -->
@@ -1875,6 +1876,7 @@ function bindButtons() { // 버튼 연결
   $('transSel').onchange = e => { state.trans = e.target.value; }; // 전환 효과
   $('btnStep').onclick = toggleStep; // 단계 등장
   $('btnOv').onclick = toggleOverview; // 목차
+  $('btnImgNow').onclick = () => savePngs('current', []); // 현재 쪽 이미지 즉시 저장
   $('btnPng').onclick = () => exportDialog('png'); // PNG
   $('btnCopy').onclick = copyImage; // 이미지 복사
   $('btnPptx').onclick = () => exportDialog('pptx'); // PPT
