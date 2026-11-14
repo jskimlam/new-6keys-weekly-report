@@ -10,7 +10,7 @@ async def main():
         pg.on('pageerror', lambda e: errs.append(str(e)))
         await pg.goto('file:///home/claude/new6k/index.html'); await pg.wait_for_timeout(1500)
         await pg.evaluate('__app.state.offline=true')
-        for w in ['2026-W40','2026-W41','2026-W42','2026-W43','2026-W44','2026-W45']:
+        for w in ['2026-W40','2026-W41','2026-W42','2026-W43','2026-W44','2026-W45','2026-W46']:
             r = await pg.evaluate('''async(w)=>{ await __app.loadWeek(w,false); const s=__app.state.slides; const warns=[]; s.forEach(x=>x.warn.forEach(t=>warns.push(t))); let ok=true,msg=''; try{ await __app.buildPptxBlob(s);}catch(e){ok=false;msg=e.message}
               return {n:s.length, warns, ok, msg, win:__app.state.win.length}}''', w)
             print(w, '쪽', r['n'], '창', r['win'], 'PPT', 'OK' if r['ok'] else r['msg'], '경고', r['warns'])

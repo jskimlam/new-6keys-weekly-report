@@ -15,7 +15,7 @@ const PXPT = 2.212; // 화면 캔버스 1pt당 픽셀
 const SEED = window.__SEED__ || {}; // 빌드 때 내장한 주차별 자료(오프라인·시트 장애 대비)
 const DECO = window.__DECO__ || {}; // 마스터 장식 PNG(base64)
 const FORCE_LOCAL = ['2026-W40']; // 내장 자료가 항상 우선인 주차(기존 앱과 동일 규칙)
-const VERIFIED = ['2026-W42', '2026-W43', '2026-W44', '2026-W45']; // 가격 검증 완료 주차(시트 가격이 다르면 내장 자료 사용 — 기존 앱과 동일 규칙)
+const VERIFIED = ['2026-W42', '2026-W43', '2026-W44', '2026-W45', '2026-W46']; // 가격 검증 완료 주차(시트 가격이 다르면 내장 자료 사용 — 기존 앱과 동일 규칙)
 
 // 회사양식 색상(녹색 계열은 마스터 장식 외에는 쓰지 않는다)
 const C = { blk: '000000', red: 'FF0000', blue: '0000FF', gray: '595959', line: 'D9D9D9', soft: 'F2F2F2', hdr2: 'E6E6E6', navy: '0C4270', bar: '213F8F', mid: '5B84C4', lgray: 'BFBFBF', wht: 'FFFFFF' }; // 색상표
@@ -221,7 +221,7 @@ function mergeWeek(week, local, remote) { // 내장 자료와 시트 응답을 �
   let items; // 최종 품목
   if (FORCE_LOCAL.includes(week)) { // W40: 내장 자료 고정
     items = local.items; // 내장 자료 사용
-  } else if (VERIFIED.includes(week)) { // W42~W45: 가격은 검증된 내장 자료 우선
+  } else if (VERIFIED.includes(week)) { // W42~W46: 가격은 검증된 내장 자료 우선
     items = mergeNonempty(local.items, rItems); // 문구는 시트 우선 병합
     Object.keys(local.items).forEach(name => { // 품목마다 가격 검증
       const live = rItems[name] || {}; // 시트 품목

@@ -18,7 +18,7 @@ src/02_scene.js    장면(scene) 모델 — 화면과 PPT 가 함께 읽는 요�
 src/03_render.js   화면 렌더러(DOM/SVG)·마스터·PNG
 src/04_pptx.js     PptxGenJS 변환 + JSZip 후처리(차트 XML·내장 엑셀·슬라이드 마스터)
 src/05_app.js      발표·관리자·편집·초기화
-data/              내장 주차 자료(W40~W45, 시트 장애 대비)
+data/              내장 주차 자료(W40~W46, 시트 장애 대비)
 build.py           src + lib + data 를 index.html 하나로 합침  →  python3 build.py
 tests/             Playwright / python-pptx 검증 스크립트
 ```
