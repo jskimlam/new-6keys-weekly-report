@@ -79,12 +79,12 @@ async def main():
         kp = pg.locator('#pageLayer .p.editable').first
         await kp.click(); await pg.keyboard.type('abc'); await pg.keyboard.press('Enter'); await pg.wait_for_timeout(300)
         t = await S("document.getElementById('toast').textContent")
-        ok('숫자 칸에 문자 → 안내 + 원래 값', '0 이상의 숫자만' in t and await S("__app.state.cache['2026-W47'].items.WTI.price")==83.98, t)
+        ok('숫자 칸에 문자 → 안내 + 원래 값', '0 이상의 숫자만' in t and await S("__app.state.cache['2026-W48'].items.WTI.price")==83.08, t)
         await pg.click('#btnEdit'); await pg.click('#btnEdit'); await pg.wait_for_timeout(200)
         kp = pg.locator('#pageLayer .p.editable').first
         await kp.click(); await pg.keyboard.type('95.5'); await pg.keyboard.press('Enter'); await pg.wait_for_timeout(300)
-        ok('숫자 수정 → 가격 반영', await S("__app.state.cache['2026-W47'].items.WTI.price")==95.5)
-        ok('전주 대비 자동 갱신(95.5-88.56=+6.94)', await S("__app.state.slides[1].els.some(e=>e.paras&&e.paras.some(p=>p.runs.some(r=>r.t.includes('6.94'))))"))
+        ok('숫자 수정 → 가격 반영', await S("__app.state.cache['2026-W48'].items.WTI.price")==95.5)
+        ok('전주 대비 자동 갱신(95.5-83.98=+11.52)', await S("__app.state.slides[1].els.some(e=>e.paras&&e.paras.some(p=>p.runs.some(r=>r.t.includes('11.52'))))"))
         ok('요약쪽 가격도 갱신', await S("__app.state.slides[0].els.find(e=>e.t==='table').rows[1][1].paras[0].runs[0].t")=='95.50')
         # 텍스트 수정
         await pg.evaluate('__app.gotoPage(1)'); await pg.wait_for_timeout(200)
@@ -94,7 +94,7 @@ async def main():
         idx = await S("Array.from(document.querySelectorAll('#pageLayer .el.editable')).findIndex(d=>d._bind&&d._bind.field==='commentary')")
         box = pg.locator('#pageLayer .el.editable').nth(idx)
         await box.click(); await pg.keyboard.press('Control+A'); await pg.keyboard.type('테스트 코멘터리 수정문'); await pg.keyboard.press('Enter'); await pg.wait_for_timeout(300)
-        ok('문구 수정 반영', await S("__app.state.cache['2026-W47'].items.WTI.commentary")=='테스트 코멘터리 수정문')
+        ok('문구 수정 반영', await S("__app.state.cache['2026-W48'].items.WTI.commentary")=='테스트 코멘터리 수정문')
         # PPT 반영
         r = await pg.evaluate('''async()=>{const b=await __app.buildPptxBlob(__app.state.slides);const u=new Uint8Array(await b.arrayBuffer());let s='';for(let i=0;i<u.length;i+=8192)s+=String.fromCharCode.apply(null,u.subarray(i,i+8192));return btoa(s)}''')
         z = zipfile.ZipFile(io.BytesIO(base64.b64decode(r)))
